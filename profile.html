@@ -364,11 +364,12 @@
     © <span id="year"></span> Face.com
 </footer>
 
+ 
+ 
 <script>
 "use strict";
 
 const API_URL = "https://www.creantunegocio.com/faceprofile";
-
 const DEFAULT_AVATAR =
     "https://www.creantunegocio.com/default-profile.png";
 
@@ -385,6 +386,7 @@ const saveButton = document.getElementById("saveButton");
 const resetButton = document.getElementById("resetButton");
 
 let originalProfile = null;
+let profileLoaded = false;
 
 document.getElementById("year").textContent =
     new Date().getFullYear();
@@ -399,73 +401,53 @@ function clearMessage() {
     message.className = "message";
 }
 
-function getErrorMessage(error) {
-    if (error instanceof TypeError) {
-        return "No se pudo conectar con la API. Comprueba la conexión y la configuración del servidor.";
-    }
-
-    return error.message || "Ocurrió un error inesperado.";
-}
-
-/*
- * Todas las peticiones a la API pasan por esta función.
- * Mantiene la sesión de Flask y envía un token si existe.
- *
- * El backend debe validar Authorization: Bearer si quieres
- * utilizar autenticación por token.
- */
 async function apiFetch(url, options = {}) {
-    const token = localStorage.getItem("facecom_token");
-
     const headers = {
         ...(options.headers || {})
     };
 
-    if (token) {
-        headers.Authorization = "Bearer " + token;
-    }
-
+    /*
+     * La autenticación actual utiliza sesiones de Flask.
+     * Enviamos la cookie y no dependemos de un token local.
+     */
     let response;
 
     try {
         response = await fetch(url, {
             ...options,
-            headers,
-            credentials: "include"
+            credentials: "include",
+            headers
         });
     } catch (error) {
-        throw new Error(
-            "No se pudo conectar con la API. Verifica la URL, el servidor y CORS."
+        const err = new Error(
+            "No se pudo conectar con el servidor. Comprueba CORS y la conexión."
         );
+        err.networkError = true;
+        throw err;
     }
 
-    const contentType =
-        response.headers.get("content-type") || "";
+    const text = await response.text();
+    let data;
 
-    if (!contentType.includes("application/json")) {
-        if (response.status === 401) {
-            const error = new Error("Debes iniciar sesión.");
-            error.status = 401;
-            throw error;
-        }
-
-        throw new Error(
-            "La API devolvió una respuesta inesperada (HTTP " +
+    try {
+        data = JSON.parse(text);
+    } catch {
+        const err = new Error(
+            "El servidor devolvió una respuesta que no es JSON (HTTP " +
             response.status + ")."
         );
+        err.status = response.status;
+        throw err;
     }
 
-    const data = await response.json();
-
     if (!response.ok || data.ok === false) {
-        const error = new Error(
-            data.message ||
+        const err = new Error(
             data.error ||
+            data.message ||
             "La solicitud no pudo completarse."
         );
-
-        error.status = response.status;
-        throw error;
+        err.status = response.status;
+        throw err;
     }
 
     return data;
@@ -489,45 +471,56 @@ function renderProfile(user) {
 }
 
 avatar.addEventListener("error", function () {
-    if (avatar.src !== DEFAULT_AVATAR) {
+    if (!avatar.src.endsWith("/default-profile.png")) {
         avatar.src = DEFAULT_AVATAR;
     }
 });
 
 async function loadProfile() {
     clearMessage();
-    usernameDisplay.textContent = "Cargando perfil...";
+    profileLoaded = false;
     saveButton.disabled = true;
+    usernameDisplay.textContent = "Cargando perfil...";
 
     try {
         const data = await apiFetch(API_URL);
 
-        if (!data.user) {
+        if (!data.user || data.user.id == null) {
             throw new Error(
-                "La API no devolvió los datos del perfil."
+                "La respuesta de /faceprofile no contiene un usuario válido."
             );
         }
 
         originalProfile = { ...data.user };
         renderProfile(originalProfile);
+        profileLoaded = true;
 
     } catch (error) {
+        usernameDisplay.textContent = "No se pudo cargar el perfil";
+
         if (error.status === 401) {
-            window.location.href = "login.html";
-            return;
+            showMessage(
+                "El servidor no reconoce tu sesión. Vuelve a iniciar sesión y comprueba que la cookie se conserve."
+            );
+        } else {
+            showMessage(error.message);
         }
 
-        showMessage(getErrorMessage(error));
-        usernameDisplay.textContent = "Perfil no disponible";
-
     } finally {
-        saveButton.disabled = false;
+        saveButton.disabled = !profileLoaded;
     }
 }
 
 form.addEventListener("submit", async function (event) {
     event.preventDefault();
     clearMessage();
+
+    if (!profileLoaded) {
+        showMessage(
+            "Primero debes cargar tu perfil correctamente."
+        );
+        return;
+    }
 
     const username = usernameInput.value.trim();
     const bio = bioInput.value.trim();
@@ -548,18 +541,13 @@ form.addEventListener("submit", async function (event) {
 
     if (profileImage) {
         try {
-            const imageUrl = new URL(profileImage);
+            const url = new URL(profileImage);
 
-            if (
-                imageUrl.protocol !== "https:" &&
-                imageUrl.protocol !== "http:"
-            ) {
+            if (!["http:", "https:"].includes(url.protocol)) {
                 throw new Error();
             }
         } catch {
-            showMessage(
-                "Escribe una dirección válida para la foto."
-            );
+            showMessage("La URL de la foto no es válida.");
             profileImageInput.focus();
             return;
         }
@@ -581,20 +569,17 @@ form.addEventListener("submit", async function (event) {
             })
         });
 
-        if (!data.user) {
-            /*
-             * Si la API responde ok:true sin devolver user,
-             * usamos los datos enviados para actualizar la vista.
-             */
-            originalProfile = {
-                ...(originalProfile || {}),
-                username,
-                bio,
-                profile_image: profileImage || null
-            };
-        } else {
-            originalProfile = { ...data.user };
-        }
+        /*
+         * Si el backend devuelve el usuario actualizado,
+         * usamos esos datos. Si no, conservamos los enviados.
+         */
+        originalProfile = {
+            ...originalProfile,
+            username: username,
+            bio: bio,
+            profile_image: profileImage || null,
+            ...(data.user || {})
+        };
 
         renderProfile(originalProfile);
 
@@ -605,14 +590,15 @@ form.addEventListener("submit", async function (event) {
 
     } catch (error) {
         if (error.status === 401) {
-            window.location.href = "login.html";
-            return;
+            showMessage(
+                "Tu sesión no está disponible para guardar. Inicia sesión nuevamente."
+            );
+        } else {
+            showMessage(error.message);
         }
 
-        showMessage(getErrorMessage(error));
-
     } finally {
-        saveButton.disabled = false;
+        saveButton.disabled = !profileLoaded;
         saveButton.textContent = "Guardar cambios";
     }
 });
@@ -621,14 +607,13 @@ resetButton.addEventListener("click", function () {
     if (originalProfile) {
         renderProfile(originalProfile);
         clearMessage();
-    } else {
-        form.reset();
-        clearMessage();
     }
 });
 
 loadProfile();
 </script>
+
+ 
 
 </body>
 </html>
