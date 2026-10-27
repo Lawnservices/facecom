@@ -1,0 +1,401 @@
+
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="theme-color" content="#1877f2">
+    <title>Crear cuenta | Face.com</title>
+
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: Arial, Helvetica, sans-serif;
+            background: #f0f2f5;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 24px 16px;
+            color: #1c1e21;
+        }
+
+        .logo {
+            color: #1877f2;
+            font-size: 42px;
+            font-weight: 800;
+            letter-spacing: -1.5px;
+            margin-bottom: 8px;
+        }
+
+        .subtitulo {
+            color: #606770;
+            font-size: 16px;
+            text-align: center;
+            margin-bottom: 24px;
+        }
+
+        .tarjeta {
+            background: white;
+            width: 100%;
+            max-width: 440px;
+            border-radius: 12px;
+            box-shadow: 0 2px 12px rgba(0, 0, 0, 0.12);
+            overflow: hidden;
+        }
+
+        .cabecera {
+            padding: 22px 24px 18px;
+            border-bottom: 1px solid #dddfe2;
+        }
+
+        .cabecera h1 {
+            font-size: 25px;
+            margin-bottom: 6px;
+        }
+
+        .cabecera p {
+            color: #606770;
+            font-size: 14px;
+        }
+
+        form {
+            padding: 22px 24px 24px;
+        }
+
+        .campo {
+            margin-bottom: 15px;
+        }
+
+        label {
+            display: block;
+            font-weight: 600;
+            font-size: 14px;
+            margin-bottom: 7px;
+        }
+
+        input,
+        textarea {
+            display: block;
+            width: 100%;
+            padding: 13px 12px;
+            border: 1px solid #ccd0d5;
+            border-radius: 7px;
+            background: #f5f6f7;
+            font-size: 15px;
+            outline: none;
+            font-family: inherit;
+        }
+
+        input:focus,
+        textarea:focus {
+            border-color: #1877f2;
+            background: #fff;
+            box-shadow: 0 0 0 2px rgba(24, 119, 242, 0.12);
+        }
+
+        textarea {
+            resize: vertical;
+            min-height: 78px;
+        }
+
+        .ayuda {
+            display: block;
+            margin-top: 6px;
+            color: #606770;
+            font-size: 12px;
+        }
+
+        .boton {
+            width: 100%;
+            padding: 13px;
+            background: #1877f2;
+            color: white;
+            border: none;
+            border-radius: 7px;
+            font-size: 17px;
+            font-weight: 700;
+            cursor: pointer;
+            margin-top: 5px;
+        }
+
+        .boton:hover {
+            background: #166fe5;
+        }
+
+        .boton:disabled {
+            opacity: 0.65;
+            cursor: wait;
+        }
+
+        .mensaje {
+            display: none;
+            padding: 12px;
+            border-radius: 7px;
+            margin-bottom: 16px;
+            font-size: 14px;
+            line-height: 1.5;
+            overflow-wrap: anywhere;
+        }
+
+        .mensaje.error {
+            display: block;
+            color: #a61b1b;
+            background: #ffebe8;
+            border: 1px solid #ffc9c2;
+        }
+
+        .mensaje.exito {
+            display: block;
+            color: #176b36;
+            background: #e7f7ed;
+            border: 1px solid #b7e4c7;
+        }
+
+        .enlace {
+            text-align: center;
+            margin-top: 20px;
+            font-size: 15px;
+        }
+
+        a {
+            color: #1877f2;
+            font-weight: 600;
+            text-decoration: none;
+        }
+
+        a:hover {
+            text-decoration: underline;
+        }
+
+        .pie {
+            color: #737373;
+            text-align: center;
+            font-size: 12px;
+            margin-top: 28px;
+        }
+
+        @media (max-width: 480px) {
+            .logo {
+                font-size: 36px;
+            }
+
+            .cabecera,
+            form {
+                padding-left: 18px;
+                padding-right: 18px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="logo">Face.com</div>
+    <p class="subtitulo">Conecta con personas y comparte tus ideas.</p>
+
+    <main class="tarjeta">
+        <div class="cabecera">
+            <h1>Crear una cuenta</h1>
+            <p>Es gratis y rápido.</p>
+        </div>
+
+        <form id="formRegistro">
+            <div id="mensaje" class="mensaje" role="status"
+                 aria-live="polite"></div>
+
+            <div class="campo">
+                <label for="username">Nombre de usuario</label>
+                <input
+                    type="text"
+                    id="username"
+                    name="username"
+                    placeholder="Tu nombre de usuario"
+                    maxlength="50"
+                    autocomplete="username"
+                    required
+                >
+            </div>
+
+            <div class="campo">
+                <label for="email">Correo electrónico</label>
+                <input
+                    type="email"
+                    id="email"
+                    name="email"
+                    placeholder="tu@correo.com"
+                    maxlength="255"
+                    autocomplete="email"
+                    required
+                >
+            </div>
+
+            <div class="campo">
+                <label for="password">Contraseña</label>
+                <input
+                    type="password"
+                    id="password"
+                    name="password"
+                    placeholder="Crea una contraseña"
+                    minlength="8"
+                    autocomplete="new-password"
+                    required
+                >
+                <small class="ayuda">
+                    Debe tener al menos 8 caracteres.
+                </small>
+            </div>
+
+            <div class="campo">
+                <label for="confirmPassword">Confirmar contraseña</label>
+                <input
+                    type="password"
+                    id="confirmPassword"
+                    name="confirmPassword"
+                    placeholder="Escribe la contraseña otra vez"
+                    minlength="8"
+                    autocomplete="new-password"
+                    required
+                >
+            </div>
+
+            <div class="campo">
+                <label for="bio">Biografía (opcional)</label>
+                <textarea
+                    id="bio"
+                    name="bio"
+                    placeholder="Cuéntanos algo sobre ti..."
+                    maxlength="500"
+                ></textarea>
+            </div>
+
+            <button type="submit" id="btnRegistro" class="boton">
+                Crear cuenta
+            </button>
+
+            <p class="enlace">
+                ¿Ya tienes una cuenta?
+                <a href="login.html">Inicia sesión</a>
+            </p>
+        </form>
+    </main>
+
+    <footer class="pie">
+        © 2026 Face.com · Tu comunidad empieza aquí.
+    </footer>
+
+    <script>
+        "use strict";
+
+        // Cambia esta dirección si tu API está alojada en otra URL.
+        const API_REGISTRO =
+            "https://www.creantunegocio.com/faceregister";
+
+        const form = document.getElementById("formRegistro");
+        const mensaje = document.getElementById("mensaje");
+        const boton = document.getElementById("btnRegistro");
+
+        function mostrarMensaje(texto, tipo) {
+            mensaje.textContent = texto;
+            mensaje.className = "mensaje " + tipo;
+        }
+
+        form.addEventListener("submit", async function (e) {
+            e.preventDefault();
+
+            const username =
+                document.getElementById("username").value.trim();
+
+            const email =
+                document.getElementById("email").value.trim();
+
+            const password =
+                document.getElementById("password").value;
+
+            const confirmPassword =
+                document.getElementById("confirmPassword").value;
+
+            const bio =
+                document.getElementById("bio").value.trim();
+
+            if (password !== confirmPassword) {
+                mostrarMensaje(
+                    "Las contraseñas no coinciden.",
+                    "error"
+                );
+                return;
+            }
+
+            if (password.length < 8) {
+                mostrarMensaje(
+                    "La contraseña debe tener al menos 8 caracteres.",
+                    "error"
+                );
+                return;
+            }
+
+            boton.disabled = true;
+            boton.textContent = "Creando cuenta...";
+            mensaje.className = "mensaje";
+
+            try {
+                const respuesta = await fetch(API_REGISTRO, {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json"
+                    },
+                    body: JSON.stringify({
+                        username: username,
+                        email: email,
+                        password: password,
+                        bio: bio || null,
+                        profile_image: null
+                    })
+                });
+
+                const data = await respuesta.json();
+
+                if (!respuesta.ok || data.ok !== true) {
+                    mostrarMensaje(
+                        data.error || "No se pudo crear la cuenta.",
+                        "error"
+                    );
+                    return;
+                }
+
+                mostrarMensaje(
+                    "¡Cuenta creada correctamente! Ya puedes iniciar sesión.",
+                    "exito"
+                );
+
+                form.reset();
+
+                // Redirige después de mostrar el mensaje.
+                setTimeout(function () {
+                    window.location.href = "login.html";
+                }, 1800);
+
+            } catch (error) {
+                mostrarMensaje(
+                    "No pudimos conectar con el servidor. " +
+                    "Comprueba tu conexión y la configuración CORS de la API.",
+                    "error"
+                );
+
+                console.error("Error de registro:", error);
+
+            } finally {
+                boton.disabled = false;
+                boton.textContent = "Crear cuenta";
+            }
+        });
+    </script>
+
+</body>
+</html>
