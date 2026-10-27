@@ -408,19 +408,34 @@ async function loadCurrentUser() {
 
     try {
         const data = await apiFetch(PROFILE_URL);
+
         if (!data.user || data.user.id == null) {
-            throw new Error("La API no devolvió los datos del usuario.");
+            throw new Error(
+                "El servidor no devolvió el ID del usuario. Revisa /faceprofile."
+            );
         }
-        currentUserId = Number(data.user.id);
-        loginNotice.textContent = `Hola, ${data.user.username}. ¡Comparte algo con la comunidad!`;
+
+        const userId = Number(data.user.id);
+
+        if (!Number.isSafeInteger(userId) || userId <= 0) {
+            throw new Error("El ID del usuario no es válido.");
+        }
+
+        currentUserId = userId;
+
+        loginNotice.textContent =
+            `Hola, ${data.user.username || "usuario"}. ¡Comparte algo con la comunidad!`;
+
         loginLink.textContent = "Mi perfil";
         loginLink.href = "profile.html";
+
     } catch (error) {
-        loginNotice.textContent = error.status === 401
-            ? "Inicia sesión para publicar, comentar y dar Me gusta."
-            : `No se pudo comprobar tu sesión: ${error.message}`;
+        loginNotice.textContent =
+            `No se pudo comprobar tu sesión: ${error.message}`;
+
         loginLink.textContent = "Entrar";
         loginLink.href = "login.html";
+
     } finally {
         sessionChecked = true;
         updateComposerState();
