@@ -1,0 +1,368 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Iniciar sesión | Face.com</title>
+    <meta name="description" content="Inicia sesión en Face.com y conecta con tu comunidad.">
+
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 24px;
+            background: #f0f2f5;
+            font-family: Arial, Helvetica, sans-serif;
+            color: #1c1e21;
+        }
+
+        .logo {
+            font-size: 42px;
+            font-weight: bold;
+            color: #1877f2;
+            margin-bottom: 8px;
+            letter-spacing: -1.5px;
+        }
+
+        .subtitle {
+            color: #606770;
+            text-align: center;
+            margin-bottom: 28px;
+            font-size: 16px;
+        }
+
+        .login-card {
+            width: 100%;
+            max-width: 400px;
+            background: #fff;
+            padding: 28px;
+            border-radius: 12px;
+            box-shadow: 0 4px 18px rgba(0, 0, 0, 0.10);
+        }
+
+        h1 {
+            text-align: center;
+            font-size: 24px;
+            margin-bottom: 24px;
+        }
+
+        .form-group {
+            margin-bottom: 17px;
+        }
+
+        label {
+            display: block;
+            font-weight: 600;
+            font-size: 14px;
+            margin-bottom: 7px;
+        }
+
+        input {
+            width: 100%;
+            padding: 13px;
+            border: 1px solid #ccd0d5;
+            border-radius: 7px;
+            font-size: 16px;
+            outline: none;
+            background: #fff;
+        }
+
+        input:focus {
+            border-color: #1877f2;
+            box-shadow: 0 0 0 2px rgba(24, 119, 242, 0.13);
+        }
+
+        .password-wrap {
+            position: relative;
+        }
+
+        .password-wrap input {
+            padding-right: 80px;
+        }
+
+        .toggle-password {
+            position: absolute;
+            right: 10px;
+            top: 50%;
+            transform: translateY(-50%);
+            border: none;
+            background: none;
+            color: #1877f2;
+            cursor: pointer;
+            font-weight: 600;
+        }
+
+        .login-button {
+            width: 100%;
+            padding: 13px;
+            border: none;
+            border-radius: 7px;
+            background: #1877f2;
+            color: white;
+            font-size: 17px;
+            font-weight: bold;
+            cursor: pointer;
+            margin-top: 5px;
+        }
+
+        .login-button:hover {
+            background: #166fe5;
+        }
+
+        .login-button:disabled {
+            opacity: 0.65;
+            cursor: not-allowed;
+        }
+
+        .message {
+            display: none;
+            padding: 12px;
+            border-radius: 7px;
+            margin-bottom: 16px;
+            font-size: 14px;
+            line-height: 1.5;
+            overflow-wrap: anywhere;
+        }
+
+        .message.error {
+            display: block;
+            color: #b42318;
+            background: #fef3f2;
+            border: 1px solid #fecdca;
+        }
+
+        .message.success {
+            display: block;
+            color: #067647;
+            background: #ecfdf3;
+            border: 1px solid #abefc6;
+        }
+
+        .links {
+            text-align: center;
+            margin-top: 20px;
+            font-size: 14px;
+            line-height: 2;
+        }
+
+        .links a {
+            color: #1877f2;
+            text-decoration: none;
+            font-weight: 600;
+        }
+
+        .links a:hover {
+            text-decoration: underline;
+        }
+
+        footer {
+            margin-top: 24px;
+            color: #737373;
+            font-size: 12px;
+            text-align: center;
+        }
+
+        @media (max-width: 480px) {
+            body {
+                padding: 16px;
+            }
+
+            .logo {
+                font-size: 36px;
+            }
+
+            .login-card {
+                padding: 22px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="logo">Face.com</div>
+
+    <p class="subtitle">
+        Conecta con las personas y comparte tus ideas.
+    </p>
+
+    <main class="login-card">
+        <h1>Iniciar sesión</h1>
+
+        <div
+            id="message"
+            class="message"
+            role="status"
+            aria-live="polite"
+        ></div>
+
+        <form id="loginForm">
+            <div class="form-group">
+                <label for="email">Correo electrónico</label>
+
+                <input
+                    type="email"
+                    id="email"
+                    name="email"
+                    placeholder="tucorreo@ejemplo.com"
+                    autocomplete="email"
+                    required
+                >
+            </div>
+
+            <div class="form-group">
+                <label for="password">Contraseña</label>
+
+                <div class="password-wrap">
+                    <input
+                        type="password"
+                        id="password"
+                        name="password"
+                        placeholder="Escribe tu contraseña"
+                        autocomplete="current-password"
+                        required
+                    >
+
+                    <button
+                        type="button"
+                        id="togglePassword"
+                        class="toggle-password"
+                        aria-label="Mostrar contraseña"
+                    >Mostrar</button>
+                </div>
+            </div>
+
+            <button
+                type="submit"
+                id="loginButton"
+                class="login-button"
+            >
+                Iniciar sesión
+            </button>
+        </form>
+
+        <div class="links">
+            ¿No tienes una cuenta?
+            <a href="registro.html">Crear cuenta</a>
+        </div>
+    </main>
+
+    <footer>
+        © <span id="year"></span> Face.com
+    </footer>
+
+    <script>
+        // Dirección de tu API de inicio de sesión Flask.
+        const API_URL = "https://www.creantunegocio.com/facelogin";
+
+        // Cambia este nombre si tu panel principal tiene otra ruta.
+        const PANEL_URL = "index.html";
+
+        const form = document.getElementById("loginForm");
+        const emailInput = document.getElementById("email");
+        const passwordInput = document.getElementById("password");
+        const loginButton = document.getElementById("loginButton");
+        const message = document.getElementById("message");
+        const togglePassword = document.getElementById("togglePassword");
+
+        document.getElementById("year").textContent =
+            new Date().getFullYear();
+
+        function showMessage(text, type) {
+            message.textContent = text;
+            message.className = "message " + type;
+        }
+
+        // Mostrar u ocultar la contraseña.
+        togglePassword.addEventListener("click", function () {
+            const oculto = passwordInput.type === "password";
+
+            passwordInput.type = oculto ? "text" : "password";
+            togglePassword.textContent = oculto ? "Ocultar" : "Mostrar";
+
+            togglePassword.setAttribute(
+                "aria-label",
+                oculto ? "Ocultar contraseña" : "Mostrar contraseña"
+            );
+        });
+
+        // Enviar el formulario a Flask.
+        form.addEventListener("submit", async function (e) {
+            e.preventDefault();
+
+            const email = emailInput.value.trim().toLowerCase();
+            const password = passwordInput.value;
+
+            if (!email || !password) {
+                showMessage(
+                    "Ingresa tu correo electrónico y contraseña.",
+                    "error"
+                );
+                return;
+            }
+
+            loginButton.disabled = true;
+            loginButton.textContent = "Verificando...";
+            message.className = "message";
+
+            try {
+                const response = await fetch(API_URL, {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json"
+                    },
+                    credentials: "include",
+                    body: JSON.stringify({
+                        email: email,
+                        password: password
+                    })
+                });
+
+                const data = await response.json();
+
+                if (!response.ok || !data.ok) {
+                    throw new Error(
+                        data.error || "No se pudo iniciar sesión."
+                    );
+                }
+
+                // Guardar el nombre público para mostrarlo en la interfaz.
+                if (data.user && data.user.username) {
+                    localStorage.setItem(
+                        "username",
+                        data.user.username
+                    );
+                }
+
+                showMessage(
+                    "¡Bienvenido! Entrando a Face.com...",
+                    "success"
+                );
+
+                window.location.href = PANEL_URL;
+
+            } catch (error) {
+                showMessage(
+                    error.message ||
+                    "No se pudo conectar con el servidor. Inténtalo de nuevo.",
+                    "error"
+                );
+
+                loginButton.disabled = false;
+                loginButton.textContent = "Iniciar sesión";
+            }
+        });
+    </script>
+
+</body>
+</html>
