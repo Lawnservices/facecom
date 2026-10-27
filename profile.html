@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="es">
 <head>
@@ -270,6 +269,7 @@
     <nav>
         <a href="index.html">Inicio</a>
         <a href="profile.html">Mi perfil</a>
+        <a href="login.html">Iniciar sesión</a>
     </nav>
 </header>
 
@@ -321,9 +321,7 @@
                     maxlength="500"
                     placeholder="Cuéntales algo sobre ti..."
                 ></textarea>
-                <span class="hint">
-                    Máximo 500 caracteres.
-                </span>
+                <span class="hint">Máximo 500 caracteres.</span>
             </div>
 
             <div class="form-group">
@@ -367,25 +365,56 @@
 </footer>
 
 <script>
-    const API_URL =
-        "https://www.creantunegocio.com/faceprofile";
+"use strict";
 
-    const DEFAULT_AVATAR =
-        "https://www.creantunegocio.com/default-profile.png";
+const API_URL = "https://www.creantunegocio.com/faceprofile";
 
-    const form = document.getElementById("profileForm");
-    const usernameInput = document.getElementById("username");
-    const bioInput = document.getElementById("bio");
-    const profileImageInput = document.getElementById("profileImage");
-    const avatar = document.getElementById("avatar");
-    const usernameDisplay = document.getElementById("usernameDisplay");
-    const emailDisplay = document.getElementById("emailDisplay");
-    const bioDisplay = document.getElementById("bioDisplay");
-    const message = document.getElementById("message");
-    const saveButton = document.getElementById("saveButton");
-    const resetButton = document.getElementById("resetButton");
+const DEFAULT_AVATAR =
+    "https://www.creantunegocio.com/default-profile.png";
 
-    async function apiFetch(url, options = {}) {
+const form = document.getElementById("profileForm");
+const usernameInput = document.getElementById("username");
+const bioInput = document.getElementById("bio");
+const profileImageInput = document.getElementById("profileImage");
+const avatar = document.getElementById("avatar");
+const usernameDisplay = document.getElementById("usernameDisplay");
+const emailDisplay = document.getElementById("emailDisplay");
+const bioDisplay = document.getElementById("bioDisplay");
+const message = document.getElementById("message");
+const saveButton = document.getElementById("saveButton");
+const resetButton = document.getElementById("resetButton");
+
+let originalProfile = null;
+
+document.getElementById("year").textContent =
+    new Date().getFullYear();
+
+function showMessage(text, type = "error") {
+    message.textContent = text;
+    message.className = "message " + type;
+}
+
+function clearMessage() {
+    message.textContent = "";
+    message.className = "message";
+}
+
+function getErrorMessage(error) {
+    if (error instanceof TypeError) {
+        return "No se pudo conectar con la API. Comprueba la conexión y la configuración del servidor.";
+    }
+
+    return error.message || "Ocurrió un error inesperado.";
+}
+
+/*
+ * Todas las peticiones a la API pasan por esta función.
+ * Mantiene la sesión de Flask y envía un token si existe.
+ *
+ * El backend debe validar Authorization: Bearer si quieres
+ * utilizar autenticación por token.
+ */
+async function apiFetch(url, options = {}) {
     const token = localStorage.getItem("facecom_token");
 
     const headers = {
@@ -393,205 +422,212 @@
     };
 
     if (token) {
-        headers.Authorization = `Bearer ${token}`;
+        headers.Authorization = "Bearer " + token;
     }
 
-    const response = await fetch(url, {
-        ...options,
-        headers,
-        credentials: "include"
-    });
+    let response;
 
-    const contentType = response.headers.get("content-type") || "";
+    try {
+        response = await fetch(url, {
+            ...options,
+            headers,
+            credentials: "include"
+        });
+    } catch (error) {
+        throw new Error(
+            "No se pudo conectar con la API. Verifica la URL, el servidor y CORS."
+        );
+    }
+
+    const contentType =
+        response.headers.get("content-type") || "";
 
     if (!contentType.includes("application/json")) {
+        if (response.status === 401) {
+            const error = new Error("Debes iniciar sesión.");
+            error.status = 401;
+            throw error;
+        }
+
         throw new Error(
-            `El servidor respondió con HTTP ${response.status}.`
+            "La API devolvió una respuesta inesperada (HTTP " +
+            response.status + ")."
         );
     }
 
     const data = await response.json();
 
-    if (!response.ok) {
-        throw new Error(
-            data.message || data.error || "Error al comunicarse con la API."
+    if (!response.ok || data.ok === false) {
+        const error = new Error(
+            data.message ||
+            data.error ||
+            "La solicitud no pudo completarse."
         );
+
+        error.status = response.status;
+        throw error;
     }
 
     return data;
 }
-    let originalProfile = null;
 
-    document.getElementById("year").textContent =
-        new Date().getFullYear();
+function renderProfile(user) {
+    usernameInput.value = user.username || "";
+    bioInput.value = user.bio || "";
+    profileImageInput.value = user.profile_image || "";
 
-    function showMessage(text, type) {
-        message.textContent = text;
-        message.className = "message " + type;
+    usernameDisplay.textContent = user.username || "Usuario";
+    emailDisplay.textContent = user.email || "";
+    bioDisplay.textContent =
+        user.bio || "Aún no hay una biografía.";
+
+    avatar.src = user.profile_image || DEFAULT_AVATAR;
+
+    if (user.username) {
+        localStorage.setItem("username", user.username);
     }
+}
 
-    function clearMessage() {
-        message.textContent = "";
-        message.className = "message";
-    }
-
-    function renderProfile(user) {
-        usernameInput.value = user.username || "";
-        bioInput.value = user.bio || "";
-        profileImageInput.value = user.profile_image || "";
-
-        usernameDisplay.textContent = user.username || "Usuario";
-        emailDisplay.textContent = user.email || "";
-        bioDisplay.textContent = user.bio || "Aún no hay una biografía.";
-
-        avatar.src = user.profile_image || DEFAULT_AVATAR;
-
-        // Guardar solamente el nombre público para la interfaz.
-        if (user.username) {
-            localStorage.setItem("username", user.username);
-        }
-    }
-
-    avatar.addEventListener("error", function () {
+avatar.addEventListener("error", function () {
+    if (avatar.src !== DEFAULT_AVATAR) {
         avatar.src = DEFAULT_AVATAR;
-    });
+    }
+});
 
-    async function loadProfile() {
-        clearMessage();
-        usernameDisplay.textContent = "Cargando perfil...";
+async function loadProfile() {
+    clearMessage();
+    usernameDisplay.textContent = "Cargando perfil...";
+    saveButton.disabled = true;
 
-        try {
-            const response = await fetch(API_URL, {
-                method: "GET",
-                credentials: "include"
-            });
+    try {
+        const data = await apiFetch(API_URL);
 
-            const data = await response.json();
-
-            if (response.status === 401) {
-                window.location.href = "login.html";
-                return;
-            }
-
-            if (!response.ok || !data.ok || !data.user) {
-                throw new Error(
-                    data.error || "No se pudo cargar tu perfil."
-                );
-            }
-
-            originalProfile = { ...data.user };
-            renderProfile(originalProfile);
-
-        } catch (error) {
-            showMessage(
-                error.message ||
-                "No se pudo conectar con el servidor.",
-                "error"
+        if (!data.user) {
+            throw new Error(
+                "La API no devolvió los datos del perfil."
             );
+        }
 
-            usernameDisplay.textContent = "Perfil no disponible";
+        originalProfile = { ...data.user };
+        renderProfile(originalProfile);
+
+    } catch (error) {
+        if (error.status === 401) {
+            window.location.href = "login.html";
+            return;
+        }
+
+        showMessage(getErrorMessage(error));
+        usernameDisplay.textContent = "Perfil no disponible";
+
+    } finally {
+        saveButton.disabled = false;
+    }
+}
+
+form.addEventListener("submit", async function (event) {
+    event.preventDefault();
+    clearMessage();
+
+    const username = usernameInput.value.trim();
+    const bio = bioInput.value.trim();
+    const profileImage = profileImageInput.value.trim();
+
+    if (!username) {
+        showMessage("Escribe un nombre de usuario.");
+        usernameInput.focus();
+        return;
+    }
+
+    if (username.length > 50 || bio.length > 500) {
+        showMessage(
+            "El nombre admite hasta 50 caracteres y la biografía hasta 500."
+        );
+        return;
+    }
+
+    if (profileImage) {
+        try {
+            const imageUrl = new URL(profileImage);
+
+            if (
+                imageUrl.protocol !== "https:" &&
+                imageUrl.protocol !== "http:"
+            ) {
+                throw new Error();
+            }
+        } catch {
+            showMessage(
+                "Escribe una dirección válida para la foto."
+            );
+            profileImageInput.focus();
+            return;
         }
     }
 
-    form.addEventListener("submit", async function (e) {
-        e.preventDefault();
-        clearMessage();
+    saveButton.disabled = true;
+    saveButton.textContent = "Guardando...";
 
-        const username = usernameInput.value.trim();
-        const bio = bioInput.value.trim();
-        const profileImage = profileImageInput.value.trim();
+    try {
+        const data = await apiFetch(API_URL, {
+            method: "PUT",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify({
+                username: username,
+                bio: bio,
+                profile_image: profileImage || null
+            })
+        });
 
-        if (!username) {
-            showMessage(
-                "Escribe un nombre de usuario.",
-                "error"
-            );
-            return;
-        }
-
-        if (username.length > 50 || bio.length > 500) {
-            showMessage(
-                "Revisa la longitud del nombre y la biografía.",
-                "error"
-            );
-            return;
-        }
-
-        if (profileImage) {
-            try {
-                const imageUrl = new URL(profileImage);
-
-                if (imageUrl.protocol !== "https:" &&
-                    imageUrl.protocol !== "http:") {
-                    throw new Error();
-                }
-            } catch {
-                showMessage(
-                    "Escribe una dirección válida para la foto.",
-                    "error"
-                );
-                return;
-            }
-        }
-
-        saveButton.disabled = true;
-        saveButton.textContent = "Guardando...";
-
-        try {
-            const response = await fetch(API_URL, {
-                method: "PUT",
-                headers: {
-                    "Content-Type": "application/json"
-                },
-                credentials: "include",
-                body: JSON.stringify({
-                    username: username,
-                    bio: bio,
-                    profile_image: profileImage || null
-                })
-            });
-
-            const data = await response.json();
-
-            if (response.status === 401) {
-                window.location.href = "login.html";
-                return;
-            }
-
-            if (!response.ok || !data.ok) {
-                throw new Error(
-                    data.error || "No se pudieron guardar los cambios."
-                );
-            }
-
+        if (!data.user) {
+            /*
+             * Si la API responde ok:true sin devolver user,
+             * usamos los datos enviados para actualizar la vista.
+             */
+            originalProfile = {
+                ...(originalProfile || {}),
+                username,
+                bio,
+                profile_image: profileImage || null
+            };
+        } else {
             originalProfile = { ...data.user };
-            renderProfile(originalProfile);
-
-            showMessage(
-                data.message || "Perfil actualizado correctamente.",
-                "success"
-            );
-
-        } catch (error) {
-            showMessage(
-                error.message ||
-                "No se pudieron guardar los cambios.",
-                "error"
-            );
-        } finally {
-            saveButton.disabled = false;
-            saveButton.textContent = "Guardar cambios";
         }
-    });
 
-    resetButton.addEventListener("click", function () {
-        if (originalProfile) {
-            renderProfile(originalProfile);
-            clearMessage();
+        renderProfile(originalProfile);
+
+        showMessage(
+            data.message || "Perfil actualizado correctamente.",
+            "success"
+        );
+
+    } catch (error) {
+        if (error.status === 401) {
+            window.location.href = "login.html";
+            return;
         }
-    });
 
-    loadProfile();
+        showMessage(getErrorMessage(error));
+
+    } finally {
+        saveButton.disabled = false;
+        saveButton.textContent = "Guardar cambios";
+    }
+});
+
+resetButton.addEventListener("click", function () {
+    if (originalProfile) {
+        renderProfile(originalProfile);
+        clearMessage();
+    } else {
+        form.reset();
+        clearMessage();
+    }
+});
+
+loadProfile();
 </script>
 
 </body>
