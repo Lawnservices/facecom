@@ -1,0 +1,563 @@
+
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Mi perfil | Face.com</title>
+    <meta name="description" content="Consulta y edita tu perfil en Face.com.">
+
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            background: #f0f2f5;
+            color: #1c1e21;
+            font-family: Arial, Helvetica, sans-serif;
+            min-height: 100vh;
+        }
+
+        header {
+            background: #fff;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, .08);
+            padding: 15px 22px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 15px;
+            flex-wrap: wrap;
+        }
+
+        .logo {
+            color: #1877f2;
+            font-size: 29px;
+            font-weight: bold;
+            text-decoration: none;
+        }
+
+        nav {
+            display: flex;
+            gap: 18px;
+            flex-wrap: wrap;
+        }
+
+        nav a {
+            color: #444;
+            text-decoration: none;
+            font-size: 14px;
+            font-weight: 600;
+        }
+
+        nav a:hover {
+            color: #1877f2;
+        }
+
+        main {
+            width: 100%;
+            max-width: 760px;
+            margin: 35px auto;
+            padding: 0 16px;
+        }
+
+        .card {
+            background: #fff;
+            border-radius: 14px;
+            padding: 28px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, .07);
+        }
+
+        h1 {
+            font-size: 27px;
+            text-align: center;
+            margin-bottom: 8px;
+        }
+
+        .subtitle {
+            text-align: center;
+            color: #65676b;
+            margin-bottom: 25px;
+            font-size: 14px;
+        }
+
+        .avatar-container {
+            display: flex;
+            justify-content: center;
+            margin-bottom: 15px;
+        }
+
+        .avatar {
+            width: 125px;
+            height: 125px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 4px solid #e4e6eb;
+            background: #e4e6eb;
+        }
+
+        .username-display {
+            text-align: center;
+            font-size: 22px;
+            font-weight: bold;
+            margin-bottom: 8px;
+            overflow-wrap: anywhere;
+        }
+
+        .bio-display {
+            text-align: center;
+            color: #606770;
+            line-height: 1.6;
+            white-space: pre-wrap;
+            overflow-wrap: anywhere;
+            margin-bottom: 28px;
+        }
+
+        .section-title {
+            font-size: 19px;
+            margin: 15px 0 20px;
+            padding-top: 22px;
+            border-top: 1px solid #e4e6eb;
+        }
+
+        .form-group {
+            margin-bottom: 19px;
+        }
+
+        label {
+            display: block;
+            font-weight: 600;
+            font-size: 14px;
+            margin-bottom: 7px;
+        }
+
+        input,
+        textarea {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #ccd0d5;
+            border-radius: 8px;
+            font-size: 15px;
+            font-family: inherit;
+        }
+
+        input:focus,
+        textarea:focus {
+            outline: 2px solid rgba(24, 119, 242, .2);
+            border-color: #1877f2;
+        }
+
+        textarea {
+            min-height: 110px;
+            resize: vertical;
+        }
+
+        .hint {
+            display: block;
+            color: #65676b;
+            font-size: 12px;
+            margin-top: 6px;
+        }
+
+        .buttons {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        button {
+            border: none;
+            border-radius: 8px;
+            padding: 12px 18px;
+            font-size: 15px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+
+        .save-button {
+            background: #1877f2;
+            color: #fff;
+            flex: 1;
+        }
+
+        .save-button:hover {
+            background: #166fe5;
+        }
+
+        .save-button:disabled {
+            opacity: .65;
+            cursor: not-allowed;
+        }
+
+        .reset-button {
+            background: #e4e6eb;
+            color: #1c1e21;
+        }
+
+        .message {
+            display: none;
+            padding: 12px;
+            margin-bottom: 18px;
+            border-radius: 8px;
+            font-size: 14px;
+            line-height: 1.5;
+            overflow-wrap: anywhere;
+        }
+
+        .message.error {
+            display: block;
+            background: #fef3f2;
+            color: #b42318;
+        }
+
+        .message.success {
+            display: block;
+            background: #ecfdf3;
+            color: #067647;
+        }
+
+        .email-display {
+            color: #65676b;
+            text-align: center;
+            font-size: 14px;
+            margin-bottom: 12px;
+            overflow-wrap: anywhere;
+        }
+
+        footer {
+            text-align: center;
+            padding: 22px;
+            color: #737373;
+            font-size: 12px;
+        }
+
+        @media (max-width: 480px) {
+            header {
+                padding: 14px;
+            }
+
+            .logo {
+                font-size: 25px;
+            }
+
+            nav {
+                gap: 12px;
+            }
+
+            main {
+                margin: 20px auto;
+            }
+
+            .card {
+                padding: 20px;
+            }
+
+            h1 {
+                font-size: 24px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+<header>
+    <a class="logo" href="index.html">Face.com</a>
+
+    <nav>
+        <a href="index.html">Inicio</a>
+        <a href="profile.html">Mi perfil</a>
+    </nav>
+</header>
+
+<main>
+    <section class="card">
+        <h1>Mi perfil</h1>
+        <p class="subtitle">Administra tu información personal.</p>
+
+        <div id="message" class="message" role="status"
+             aria-live="polite"></div>
+
+        <div class="avatar-container">
+            <img
+                id="avatar"
+                class="avatar"
+                alt="Foto de perfil"
+                src="https://www.creantunegocio.com/default-profile.png"
+            >
+        </div>
+
+        <div id="usernameDisplay" class="username-display">
+            Cargando perfil...
+        </div>
+
+        <div id="emailDisplay" class="email-display"></div>
+
+        <p id="bioDisplay" class="bio-display"></p>
+
+        <h2 class="section-title">Editar mi perfil</h2>
+
+        <form id="profileForm">
+            <div class="form-group">
+                <label for="username">Nombre de usuario</label>
+                <input
+                    type="text"
+                    id="username"
+                    name="username"
+                    maxlength="50"
+                    required
+                    autocomplete="username"
+                >
+            </div>
+
+            <div class="form-group">
+                <label for="bio">Biografía</label>
+                <textarea
+                    id="bio"
+                    name="bio"
+                    maxlength="500"
+                    placeholder="Cuéntales algo sobre ti..."
+                ></textarea>
+                <span class="hint">
+                    Máximo 500 caracteres.
+                </span>
+            </div>
+
+            <div class="form-group">
+                <label for="profileImage">Dirección de tu foto</label>
+                <input
+                    type="url"
+                    id="profileImage"
+                    name="profileImage"
+                    maxlength="255"
+                    placeholder="https://ejemplo.com/mi-foto.jpg"
+                >
+                <span class="hint">
+                    Introduce una URL pública de una imagen.
+                    Este campo no sube archivos desde tu ordenador.
+                </span>
+            </div>
+
+            <div class="buttons">
+                <button
+                    type="submit"
+                    id="saveButton"
+                    class="save-button"
+                >
+                    Guardar cambios
+                </button>
+
+                <button
+                    type="button"
+                    id="resetButton"
+                    class="reset-button"
+                >
+                    Cancelar
+                </button>
+            </div>
+        </form>
+    </section>
+</main>
+
+<footer>
+    © <span id="year"></span> Face.com
+</footer>
+
+<script>
+    const API_URL =
+        "https://www.creantunegocio.com/faceprofile";
+
+    const DEFAULT_AVATAR =
+        "https://www.creantunegocio.com/default-profile.png";
+
+    const form = document.getElementById("profileForm");
+    const usernameInput = document.getElementById("username");
+    const bioInput = document.getElementById("bio");
+    const profileImageInput = document.getElementById("profileImage");
+    const avatar = document.getElementById("avatar");
+    const usernameDisplay = document.getElementById("usernameDisplay");
+    const emailDisplay = document.getElementById("emailDisplay");
+    const bioDisplay = document.getElementById("bioDisplay");
+    const message = document.getElementById("message");
+    const saveButton = document.getElementById("saveButton");
+    const resetButton = document.getElementById("resetButton");
+
+    let originalProfile = null;
+
+    document.getElementById("year").textContent =
+        new Date().getFullYear();
+
+    function showMessage(text, type) {
+        message.textContent = text;
+        message.className = "message " + type;
+    }
+
+    function clearMessage() {
+        message.textContent = "";
+        message.className = "message";
+    }
+
+    function renderProfile(user) {
+        usernameInput.value = user.username || "";
+        bioInput.value = user.bio || "";
+        profileImageInput.value = user.profile_image || "";
+
+        usernameDisplay.textContent = user.username || "Usuario";
+        emailDisplay.textContent = user.email || "";
+        bioDisplay.textContent = user.bio || "Aún no hay una biografía.";
+
+        avatar.src = user.profile_image || DEFAULT_AVATAR;
+
+        // Guardar solamente el nombre público para la interfaz.
+        if (user.username) {
+            localStorage.setItem("username", user.username);
+        }
+    }
+
+    avatar.addEventListener("error", function () {
+        avatar.src = DEFAULT_AVATAR;
+    });
+
+    async function loadProfile() {
+        clearMessage();
+        usernameDisplay.textContent = "Cargando perfil...";
+
+        try {
+            const response = await fetch(API_URL, {
+                method: "GET",
+                credentials: "include"
+            });
+
+            const data = await response.json();
+
+            if (response.status === 401) {
+                window.location.href = "login.html";
+                return;
+            }
+
+            if (!response.ok || !data.ok || !data.user) {
+                throw new Error(
+                    data.error || "No se pudo cargar tu perfil."
+                );
+            }
+
+            originalProfile = { ...data.user };
+            renderProfile(originalProfile);
+
+        } catch (error) {
+            showMessage(
+                error.message ||
+                "No se pudo conectar con el servidor.",
+                "error"
+            );
+
+            usernameDisplay.textContent = "Perfil no disponible";
+        }
+    }
+
+    form.addEventListener("submit", async function (e) {
+        e.preventDefault();
+        clearMessage();
+
+        const username = usernameInput.value.trim();
+        const bio = bioInput.value.trim();
+        const profileImage = profileImageInput.value.trim();
+
+        if (!username) {
+            showMessage(
+                "Escribe un nombre de usuario.",
+                "error"
+            );
+            return;
+        }
+
+        if (username.length > 50 || bio.length > 500) {
+            showMessage(
+                "Revisa la longitud del nombre y la biografía.",
+                "error"
+            );
+            return;
+        }
+
+        if (profileImage) {
+            try {
+                const imageUrl = new URL(profileImage);
+
+                if (imageUrl.protocol !== "https:" &&
+                    imageUrl.protocol !== "http:") {
+                    throw new Error();
+                }
+            } catch {
+                showMessage(
+                    "Escribe una dirección válida para la foto.",
+                    "error"
+                );
+                return;
+            }
+        }
+
+        saveButton.disabled = true;
+        saveButton.textContent = "Guardando...";
+
+        try {
+            const response = await fetch(API_URL, {
+                method: "PUT",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                credentials: "include",
+                body: JSON.stringify({
+                    username: username,
+                    bio: bio,
+                    profile_image: profileImage || null
+                })
+            });
+
+            const data = await response.json();
+
+            if (response.status === 401) {
+                window.location.href = "login.html";
+                return;
+            }
+
+            if (!response.ok || !data.ok) {
+                throw new Error(
+                    data.error || "No se pudieron guardar los cambios."
+                );
+            }
+
+            originalProfile = { ...data.user };
+            renderProfile(originalProfile);
+
+            showMessage(
+                data.message || "Perfil actualizado correctamente.",
+                "success"
+            );
+
+        } catch (error) {
+            showMessage(
+                error.message ||
+                "No se pudieron guardar los cambios.",
+                "error"
+            );
+        } finally {
+            saveButton.disabled = false;
+            saveButton.textContent = "Guardar cambios";
+        }
+    });
+
+    resetButton.addEventListener("click", function () {
+        if (originalProfile) {
+            renderProfile(originalProfile);
+            clearMessage();
+        }
+    });
+
+    loadProfile();
+</script>
+
+</body>
+</html>
