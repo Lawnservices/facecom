@@ -385,6 +385,41 @@
     const saveButton = document.getElementById("saveButton");
     const resetButton = document.getElementById("resetButton");
 
+    async function apiFetch(url, options = {}) {
+    const token = localStorage.getItem("facecom_token");
+
+    const headers = {
+        ...(options.headers || {})
+    };
+
+    if (token) {
+        headers.Authorization = `Bearer ${token}`;
+    }
+
+    const response = await fetch(url, {
+        ...options,
+        headers,
+        credentials: "include"
+    });
+
+    const contentType = response.headers.get("content-type") || "";
+
+    if (!contentType.includes("application/json")) {
+        throw new Error(
+            `El servidor respondió con HTTP ${response.status}.`
+        );
+    }
+
+    const data = await response.json();
+
+    if (!response.ok) {
+        throw new Error(
+            data.message || data.error || "Error al comunicarse con la API."
+        );
+    }
+
+    return data;
+}
     let originalProfile = null;
 
     document.getElementById("year").textContent =
