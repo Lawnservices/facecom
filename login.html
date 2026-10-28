@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="es">
 <head>
@@ -189,7 +190,6 @@
 </head>
 
 <body>
-
     <div class="logo">Face.com</div>
 
     <p class="subtitle">
@@ -199,23 +199,19 @@
     <main class="login-card">
         <h1>Iniciar sesión</h1>
 
-        <div
-            id="message"
-            class="message"
-            role="status"
-            aria-live="polite"
-        ></div>
+        <div id="message" class="message"
+             role="status" aria-live="polite"></div>
 
         <form id="loginForm">
             <div class="form-group">
                 <label for="email">Correo electrónico</label>
-
                 <input
                     type="email"
                     id="email"
                     name="email"
                     placeholder="tucorreo@ejemplo.com"
                     autocomplete="email"
+                    maxlength="254"
                     required
                 >
             </div>
@@ -238,15 +234,13 @@
                         id="togglePassword"
                         class="toggle-password"
                         aria-label="Mostrar contraseña"
+                        aria-pressed="false"
                     >Mostrar</button>
                 </div>
             </div>
 
-            <button
-                type="submit"
-                id="loginButton"
-                class="login-button"
-            >
+            <button type="submit" id="loginButton"
+                    class="login-button">
                 Iniciar sesión
             </button>
         </form>
@@ -262,10 +256,9 @@
     </footer>
 
     <script>
-        // Dirección de tu API de inicio de sesión Flask.
-        const API_URL = "https://www.creantunegocio.com/facelogin";
+        "use strict";
 
-        // Cambia este nombre si tu panel principal tiene otra ruta.
+        const API_URL = "https://www.creantunegocio.com/facelogin";
         const PANEL_URL = "index.html";
 
         const form = document.getElementById("loginForm");
@@ -278,36 +271,31 @@
         document.getElementById("year").textContent =
             new Date().getFullYear();
 
-        function showMessage(text, type) {
+        function showMessage(text, type = "error") {
             message.textContent = text;
             message.className = "message " + type;
         }
 
-        // Mostrar u ocultar la contraseña.
         togglePassword.addEventListener("click", function () {
-            const oculto = passwordInput.type === "password";
+            const show = passwordInput.type === "password";
 
-            passwordInput.type = oculto ? "text" : "password";
-            togglePassword.textContent = oculto ? "Ocultar" : "Mostrar";
-
+            passwordInput.type = show ? "text" : "password";
+            togglePassword.textContent = show ? "Ocultar" : "Mostrar";
             togglePassword.setAttribute(
                 "aria-label",
-                oculto ? "Ocultar contraseña" : "Mostrar contraseña"
+                show ? "Ocultar contraseña" : "Mostrar contraseña"
             );
+            togglePassword.setAttribute("aria-pressed", String(show));
         });
 
-        // Enviar el formulario a Flask.
-        form.addEventListener("submit", async function (e) {
-            e.preventDefault();
+        form.addEventListener("submit", async function (event) {
+            event.preventDefault();
 
             const email = emailInput.value.trim().toLowerCase();
             const password = passwordInput.value;
 
             if (!email || !password) {
-                showMessage(
-                    "Ingresa tu correo electrónico y contraseña.",
-                    "error"
-                );
+                showMessage("Ingresa tu correo y contraseña.");
                 return;
             }
 
@@ -318,44 +306,50 @@
             try {
                 const response = await fetch(API_URL, {
                     method: "POST",
+                    credentials: "include",
                     headers: {
                         "Content-Type": "application/json"
                     },
-                    credentials: "include",
                     body: JSON.stringify({
                         email: email,
                         password: password
                     })
                 });
 
-                const data = await response.json();
+                const responseText = await response.text();
+                let data;
 
-                if (!response.ok || !data.ok) {
+                try {
+                    data = JSON.parse(responseText);
+                } catch {
                     throw new Error(
-                        data.error || "No se pudo iniciar sesión."
+                        "El servidor devolvió una respuesta inesperada. Revisa la ruta /facelogin y los registros de Flask."
                     );
                 }
 
-                // Guardar el nombre público para mostrarlo en la interfaz.
-                if (data.user && data.user.username) {
-                    localStorage.setItem(
-                        "username",
-                        data.user.username
+                if (!response.ok || data.ok !== true) {
+                    throw new Error(
+                        data.error ||
+                        data.message ||
+                        "No se pudo iniciar sesión."
                     );
                 }
 
-                showMessage(
-                    "¡Bienvenido! Entrando a Face.com...",
-                    "success"
-                );
+                // La API debe crear la sesión de Flask.
+                if (data.username) {
+                    localStorage.setItem("username", data.username);
+                } else if (data.user && data.user.username) {
+                    localStorage.setItem("username", data.user.username);
+                }
+
+                showMessage("¡Bienvenido! Entrando a Face.com...", "success");
 
                 window.location.href = PANEL_URL;
 
             } catch (error) {
                 showMessage(
                     error.message ||
-                    "No se pudo conectar con el servidor. Inténtalo de nuevo.",
-                    "error"
+                    "No se pudo conectar con el servidor. Inténtalo de nuevo."
                 );
 
                 loginButton.disabled = false;
@@ -363,6 +357,5 @@
             }
         });
     </script>
-
 </body>
 </html>
